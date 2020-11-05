@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentActivity;
 
 import android.annotation.SuppressLint;
 import android.app.FragmentManager;
@@ -31,7 +32,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.io.IOException;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
 
     LinearLayout layout_1;
     LinearLayout layout_bottom;
@@ -41,10 +42,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     SearchView searchView;
     GoogleMap googleMap;
-
-
-    private FragmentManager fragmentManager;
-    private MapFragment mapFragment;
+    SupportMapFragment mapFragment;
 
     private DrawerLayout drawerLayout;
     private View drawerView;
@@ -58,9 +56,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         searchView = findViewById(R.id.sv_location);
-        fragmentManager = getFragmentManager();
-        mapFragment = (MapFragment)fragmentManager.findFragmentById(R.id.googleMap);
+
+        mapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.googleMap);
         mapFragment.getMapAsync(this);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -89,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 return false;
             }
         });
+        mapFragment.getMapAsync(this);
 
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         drawerView = (View)findViewById(R.id.drawer);
