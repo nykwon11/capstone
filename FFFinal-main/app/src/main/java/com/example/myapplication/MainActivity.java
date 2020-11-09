@@ -4,22 +4,23 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.FragmentActivity;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,7 +29,6 @@ import android.location.Geocoder;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -40,7 +40,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -193,6 +192,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             toast.cancel();
         }
     }
+
         @Override
         public void onMapReady(final GoogleMap googleMap) {
 
@@ -210,7 +210,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         opt1_1.position(new LatLng(37.546432, 126.964717));
         opt1_1.title("순헌관");
         googleMap.addMarker(opt1_1);
-
 
         MarkerOptions opt1_2 = new MarkerOptions();
         opt1_2.position(new LatLng(37.546635, 126.965023));
@@ -301,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 17));
 
 
+
             // 버튼 이벤트
         button.setOnClickListener(new Button.OnClickListener() {
             @Override
@@ -344,6 +344,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onMarkerClick(Marker marker) {
+
+        if(marker.isInfoWindowShown()) {
+            marker.hideInfoWindow();
+        } else {
+            marker.showInfoWindow();
+        }
 
         if (marker.getTitle().equals("프라임관")) {
             Intent intent = new Intent(MainActivity.this, PopupActivity.class);
