@@ -4,16 +4,24 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentActivity;
 
 import android.annotation.SuppressLint;
 import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.location.Address;
 import android.location.Geocoder;
@@ -26,13 +34,15 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
-
 
 
 
@@ -43,7 +53,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     LinearLayout menu_1;
     LinearLayout menu_2;
     LinearLayout menu_3;
-
 
     private FragmentManager fragmentManager;
     private MapFragment mapFragment;
@@ -59,8 +68,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private EditText editText;
     private GoogleMap mMap;
 
-
     @SuppressLint("WrongViewCast")
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,20 +78,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         editText = (EditText) findViewById(R.id.editText);
         button=(Button)findViewById(R.id.button);
 
-        fragmentManager = getFragmentManager();
-        mapFragment = (MapFragment)fragmentManager.findFragmentById(R.id.googleMap);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mMap);
         mapFragment.getMapAsync(this);
 
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         drawerView = (View)findViewById(R.id.drawer);
-
 
         //메뉴 소환 버튼
         layout_1 = findViewById(R.id.layout_1);
         layout_1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               drawerLayout.openDrawer(drawerView);
+                drawerLayout.openDrawer(drawerView);
             }
         });
 
@@ -125,9 +132,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         layout_bottom = findViewById(R.id.layout_bottom);
-        layout_bottom.setOnClickListener(new View.OnClickListener(){
+        layout_bottom.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setMessage("정말로 종료하시겠습니까?");
                 builder.setTitle("종료 알림창")
@@ -186,9 +193,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             toast.cancel();
         }
     }
+        @Override
+        public void onMapReady(final GoogleMap googleMap) {
 
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        geocoder = new Geocoder(this);
 
         LatLng location = new LatLng(37.545133, 126.964629);
         MarkerOptions markerOptions = new MarkerOptions();
@@ -201,6 +210,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         opt1_1.position(new LatLng(37.546432, 126.964717));
         opt1_1.title("순헌관");
         googleMap.addMarker(opt1_1);
+
 
         MarkerOptions opt1_2 = new MarkerOptions();
         opt1_2.position(new LatLng(37.546635, 126.965023));
@@ -288,56 +298,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         googleMap.addMarker(opt2_9);
 
         googleMap.setOnMarkerClickListener(this) ;
-
         googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 17));
 
-    }
 
-
-    @Override
-    public void onMapReady(final GoogleMap googleMap) {
-        mMap = googleMap;
-        geocoder = new Geocoder(this);
-
-        // 맵 터치 이벤트 구현 //
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener(){
+            // 버튼 이벤트
+        button.setOnClickListener(new Button.OnClickListener() {
             @Override
-            public void onMapClick(LatLng point) {
-                MarkerOptions mOptions = new MarkerOptions();
-                // 마커 타이틀
-                mOptions.title("마커 좌표");
-                Double latitude = point.latitude; // 위도
-                Double longitude = point.longitude; // 경도
-                // 마커의 스니펫(간단한 텍스트) 설정
-                mOptions.snippet(latitude.toString() + ", " + longitude.toString());
-                // LatLng: 위도 경도 쌍을 나타냄
-                mOptions.position(new LatLng(latitude, longitude));
-                // 마커(핀) 추가
-                googleMap.addMarker(mOptions);
-            }
-        });
-        ////////////////////
-
-        // 버튼 이벤트
-        button.setOnClickListener(new Button.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                String str=editText.getText().toString();
+            public void onClick(View v) {
+                String str = editText.getText().toString();
                 List<Address> addressList = null;
                 try {
                     // editText에 입력한 텍스트(주소, 지역, 장소 등)을 지오 코딩을 이용해 변환
                     addressList = geocoder.getFromLocationName(
                             str, // 주소
                             10); // 최대 검색 결과 개수
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 System.out.println(addressList.get(0).toString());
                 // 콤마를 기준으로 split
-                String []splitStr = addressList.get(0).toString().split(",");
-                String address = splitStr[0].substring(splitStr[0].indexOf("\"") + 1,splitStr[0].length() - 2); // 주소
+                String[] splitStr = addressList.get(0).toString().split(",");
+                String address = splitStr[0].substring(splitStr[0].indexOf("\"") + 1, splitStr[0].length() - 2); // 주소
                 System.out.println(address);
 
                 String latitude = splitStr[10].substring(splitStr[10].indexOf("=") + 1); // 위도
@@ -358,19 +340,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(point,15));
             }
         });
-        ////////////////////
-        LatLng location = new LatLng(37.545133, 126.964629);
-        mMap.addMarker(new MarkerOptions().position(location).title("Marker in"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
-
     }
-
 
     @Override
     public boolean onMarkerClick(Marker marker) {
 
-        if(marker.getTitle().equals("프라임관"))
-        {
+        if (marker.getTitle().equals("프라임관")) {
             Intent intent = new Intent(MainActivity.this, PopupActivity.class);
             startActivity(intent);
         }
