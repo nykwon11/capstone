@@ -307,6 +307,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onClick(View v) {
                 String str = editText.getText().toString();
                 List<Address> addressList = null;
+
                 try {
                     // editText에 입력한 텍스트(주소, 지역, 장소 등)을 지오 코딩을 이용해 변환
                     addressList = geocoder.getFromLocationName(
@@ -316,28 +317,39 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     e.printStackTrace();
                 }
 
-                System.out.println(addressList.get(0).toString());
-                // 콤마를 기준으로 split
-                String[] splitStr = addressList.get(0).toString().split(",");
-                String address = splitStr[0].substring(splitStr[0].indexOf("\"") + 1, splitStr[0].length() - 2); // 주소
-                System.out.println(address);
+                if (addressList.size() > 0) {
+                    System.out.println(addressList.get(0).toString());
+                    // 콤마를 기준으로 split
+                    String[] splitStr = addressList.get(0).toString().split(",");
+                    String address = splitStr[0].substring(splitStr[0].indexOf("\"") + 1, splitStr[0].length() - 2); // 주소
+                    System.out.println(address);
 
-                String latitude = splitStr[10].substring(splitStr[10].indexOf("=") + 1); // 위도
-                String longitude = splitStr[12].substring(splitStr[12].indexOf("=") + 1); // 경도
-                System.out.println(latitude);
-                System.out.println(longitude);
+                    String latitude = splitStr[10].substring(splitStr[10].indexOf("=") + 1); // 위도
+                    String longitude = splitStr[12].substring(splitStr[12].indexOf("=") + 1); // 경도
+                    System.out.println(latitude);
+                    System.out.println(longitude);
 
-                // 좌표(위도, 경도) 생성
-                LatLng point = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
-                // 마커 생성
-                MarkerOptions mOptions2 = new MarkerOptions();
-                mOptions2.title("search result");
-                mOptions2.snippet(address);
-                mOptions2.position(point);
-                // 마커 추가
-                mMap.addMarker(mOptions2);
-                // 해당 좌표로 화면 줌
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(point,15));
+                    // 좌표(위도, 경도) 생성
+                    LatLng point = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
+                    // 마커 생성
+                    MarkerOptions mOptions2 = new MarkerOptions();
+                    mOptions2.title("search result");
+                    mOptions2.snippet(address);
+                    mOptions2.position(point);
+                    // 마커 추가
+                    mMap.addMarker(mOptions2);
+                    // 해당 좌표로 화면 줌
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(point, 15));
+                } else {
+                    new AlertDialog.Builder(MainActivity.this) // TestActivity 부분에는 현재 Activity의 이름 입력.
+                            .setMessage("검색 결과가 없습니다")     // 제목 부분 (직접 작성)
+                            .setPositiveButton("확인", new DialogInterface.OnClickListener(){      // 버튼1 (직접 작성)
+                        public void onClick(DialogInterface dialog, int which){
+                            Toast.makeText(getApplicationContext(), "다시 입력하세요", Toast.LENGTH_SHORT).show(); // 실행할 코드
+                        }
+                    })
+                        .show();
+                  }
             }
         });
     }
